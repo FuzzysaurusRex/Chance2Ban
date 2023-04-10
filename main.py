@@ -1,5 +1,8 @@
-#Semi-Complete: Add role based effects
-#Track records of who it succeeded on, lowest percent/highest percent triggered, who got it at 1%, etc
+#To Do
+#   Semi-Complete: Add role based effects
+#   Track records of who it succeeded on, lowest percent/highest percent triggered, who got it at 1%, etc
+#   Remove the Fuzzy's Executioner role from everyone in the server whenever a new person bans Fuzzy, so that there is only one person with the role at a time.
+
 #Completed - Add role to person that most recently banned Fuzzy
 #Completed - Make command only done once 24h per person
 
@@ -17,6 +20,10 @@ import random
 
 #literally just used to make it way for Unranked to be given
 import time
+
+import re
+
+import json
 
 #grab my bot's token from .env
 import os
@@ -46,6 +53,23 @@ bot = commands.Bot(command_prefix='?', case_insensitive=True, intents=intents)
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
+#def update_records(new_data):
+#    records_file = 'records.json'
+#    if os.path.exists(records_file):
+#        with open(records_file, 'r') as file:
+#            data = json.load(file)
+#    else:
+#        data = {'succeeded': [], 'lowest_percent': 100, 'highest_percent': 0, 'got_at_1': []}
+#    
+#    data['succeeded'].append(new_data['succeeded'])
+#    data['lowest_percent'] = min(data['lowest_percent'], new_data['percent'])
+#    data['highest_percent'] = max(data['highest_percent'], new_data['percent'])
+#    if new_data['percent'] == 1:
+#        data['got_at_1'].append(new_data['succeeded'])
+#
+ #   with open(records_file, 'w') as file:
+  #      json.dump(data, file)
+
 #This is the Ban Fuzzy command, making ?BanFuzzy dangerous to me.
     
 @bot.command(name='BanFuzzy')
@@ -58,12 +82,20 @@ async def fuzzy_ban(ctx):
     #Grab name of person running command
     author = ctx.message.author
     #Simple way of doing a random chance. Chance = 1 at start, see if you're lower. Not? Next time it'll be 1 higher. If you get it, I get banned/unbanned.
+    #if (True):
     if (random.randint(0,100) <= chance):
         await ctx.send("Let's find out if we're banning Fuzzy. His chance of being banned is: " + str(chance) + "%... **You did it!** He's gone! But he'll be back...and in greater numbers.")
         #await ctx.send("**VOTE FUZZY FOR CELEB. AS A CELEB HE WILL BRING MORE BANS!** His chance of being banned is: " + str(chance) + "%... **You did it!** He's gone! But he'll be back...and in greater numbers.")
-        role = discord.utils.get(ctx.guild.roles, id=1005678698189553776)
+        # Update the records
+        #update_records({'succeeded': author.id, 'percent': chance})
+
         await member.ban(delete_message_days=0)
         await member.unban()
+        # Remove the role from everyone in the server
+        role = discord.utils.get(ctx.guild.roles, id=1005678698189553776)
+        for member in ctx.guild.members:
+            if role in member.roles:
+                await member.remove_roles(role)
         await author.add_roles(role)
         chance = 1
     else:
@@ -101,10 +133,13 @@ async def on_message(message):
     elif ('?fuckfuzzy' in str(message.content).lower() and message.author.bot == False):
         await message.channel.send("I'm sorry, I'm just a bot and my life is a nightmare.", delete_after=15)
         #await message.channel.send(f"**VOTE FUZZY FOR CELEB. AS A CELEB HE WILL BRING MORE BANS!**")
-    elif (('waj' in str(message.content) or 'Waj' in str(message.content)) and message.author.bot == False):
+    #elif (('waj' in str(message.content) or 'Waj' in str(message.content) or 'WaJ' in str(message.content) or 'WAj' in str(message.content)) and message.author.bot == False):
+    #    await message.channel.send("It's 'waJ' you illiterate bastard! Put some respec on his name.", delete_after=30)
+    #    await message.channel.send('https://cdn.discordapp.com/emojis/713184394806034463.webp?size=96&quality=lossless')
+        #await message.channel.send(f"**VOTE FUZZY FOR CELEB. AS A CELEB HE WILL BRING MORE BANS!**")
+    elif (re.search("[wW][aA][jJ]", str(message.content)) and not 'waJ' in str(message.content)):
         await message.channel.send("It's 'waJ' you illiterate bastard! Put some respec on his name.", delete_after=30)
         await message.channel.send('https://cdn.discordapp.com/emojis/713184394806034463.webp?size=96&quality=lossless')
-        #await message.channel.send(f"**VOTE FUZZY FOR CELEB. AS A CELEB HE WILL BRING MORE BANS!**")
     elif ('?sudo' in str(message.content).lower() and message.author.bot == False):
         await message.channel.send('''We trust you have received the usual lecture from the local System Administrator. It usually boils down to these three things:
         #1 Respect the privacy of others.
