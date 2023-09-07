@@ -146,7 +146,9 @@ async def on_message(message):
         #2 Think before you type.
         #3 With great power comes great responsibility.        
 Username is not in the sudoers file. This incident will be reported.''', delete_after=15)
-
+    elif("burgers" in str(message.content).lower() and message.author.bot == False):
+        await message.channel.send("I don't watch his stuff anymore but this was good to watch", delete_after=30)
+        await message.channel.send("https://youtu.be/BiiPDwCbzbM?si=slObHlShk3QTkzpS", delete_after=30)
     #Need this for on_message to not break other commands
     await bot.process_commands(message)
     
